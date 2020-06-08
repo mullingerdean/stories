@@ -1,17 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser')
+const exphbs = require('express-handlebars'); 
+const cookieParser = require('cookie-parser'); 
 const session = require('express-session'); 
 const passport = require('passport');
 
+
+
 // Load User Model
 require('./models/User');
-
 //Passport Config
 require('./config/passport')(passport);
 
 const auth = require('./routes/auth'); 
-
+const index = require('./routes/index');
 
 //Load keys file 
 const keys = require('./config/keys'); 
@@ -21,18 +23,26 @@ const keys = require('./config/keys');
 
 //Mongoose connect
 mongoose.connect(keys.mongoURI, {
-    useMongoClient: true
+    // useMongoClient: true
+    useNewUrlParser: true,
+    useUnifiedTopology: true 
 })
 .then( ()  => console.log('MongoDB Connected ...'))
 .catch(err => console.log(err)); 
 
 const app = express(); 
 
+//Handlebars Middleware
+app.engine('handlebars', exphbs({
+    defaultLayout: 'main'}));
+
+app.set('view engine', 'handlebars');
+
 
 
 app.get('/', (req, res) =>{
     res.send('it works'); 
-}); 
+})
 
 
 app.use(cookieParser()); 
@@ -53,6 +63,7 @@ app.use((req, res, next) => {
   });
 
 //User Routes 
+app.use('/', index); 
 app.use('/auth', auth); 
 
 const port = process.env.PORT || 5000; 
