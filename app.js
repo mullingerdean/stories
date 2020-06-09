@@ -1,6 +1,8 @@
 const express = require('express');
+const path = require('path'); 
 const mongoose = require('mongoose');
 const exphbs = require('express-handlebars'); 
+const bodyParser = require('body-parser'); 
 const cookieParser = require('cookie-parser'); 
 const session = require('express-session'); 
 const passport = require('passport');
@@ -10,11 +12,14 @@ const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-acce
 
 // Load User Model
 require('./models/User');
+require('./models/Stories');
 //Passport Config
 require('./config/passport')(passport);
 
+
 const auth = require('./routes/auth'); 
 const index = require('./routes/index');
+const stories = require('./routes/stories');
 
 //Load keys file 
 const keys = require('./config/keys'); 
@@ -33,6 +38,12 @@ mongoose.connect(keys.mongoURI, {
 .catch(err => console.log(err)); 
 
 const app = express(); 
+
+
+// Body Parser middleware
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
 
 //Handlebars Middleware
 app.engine('handlebars', exphbs({
@@ -60,9 +71,13 @@ app.use((req, res, next) => {
     next();
   });
 
+//Set Static Folder
+app.use(express.static(path.join(__dirname, 'public')))
+
 //User Routes 
 app.use('/', index); 
 app.use('/auth', auth); 
+app.use('/stories', stories);
 
 const port = process.env.PORT || 5000; 
  
