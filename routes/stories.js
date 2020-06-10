@@ -27,9 +27,26 @@ router.get('/', (req, res) => {
     .sort({date: 'desc'})
     .populate('comments.commentUser')
     .then(story =>{
-      res.render('stories/show', {
-        story:story 
-      });
+      if(story.status == 'public'){
+        res.render('stories/show', {
+          story:story
+        }); 
+      }else{
+        if(req.user){
+          if(req.user.id == story.user.id){
+            res.render('stories/show', {
+              story:story
+          });
+        }else{
+          res.redirect('/stories')
+
+        }
+      }  
+      else{
+        res.redirect('/stories')
+
+      }  
+      }
     });
   });
 
